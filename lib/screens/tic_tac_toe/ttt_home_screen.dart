@@ -59,61 +59,68 @@ class TttHomeScreenState extends State<TttHomeScreen> {
                 children: [
                   Expanded(
                     child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Ready to Play?',
-                            style: Theme.of(context).textTheme.displayLarge,
+                      child: ScrollConfiguration(
+                        behavior: MyCustomScrollBehavior(),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Ready to Play?',
+                                style: Theme.of(context).textTheme.displayLarge,
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 40),
+                              _buildGameButton(
+                                context,
+                                title: 'Player vs Bot',
+                                icon: Icons.android,
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const GameSettingsScreen()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildGameButton(
+                                context,
+                                title: 'High Scores (Bot)',
+                                icon: Icons.score,
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const ScoreScreen()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildGameButton(
+                                context,
+                                title: 'Player vs Player',
+                                icon: Icons.people,
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const PlayerVsPlayerScreen()),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              _buildGameButton(
+                                context,
+                                title: 'High Scores (PvP)',
+                                icon: Icons.score,
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const TwoPlayerScoreScreen()),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 40),
-                          _buildGameButton(
-                            context,
-                            title: 'Player vs Bot',
-                            icon: Icons.android,
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const GameSettingsScreen()),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildGameButton(
-                            context,
-                            title: 'High Scores (Bot)',
-                            icon: Icons.score,
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const ScoreScreen()),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildGameButton(
-                            context,
-                            title: 'Player vs Player',
-                            icon: Icons.people,
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const PlayerVsPlayerScreen()),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildGameButton(
-                            context,
-                            title: 'High Scores (PvP)',
-                            icon: Icons.score,
-                            onPressed: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const TwoPlayerScoreScreen()),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -129,7 +136,7 @@ class TttHomeScreenState extends State<TttHomeScreen> {
       required IconData icon,
       required VoidCallback onPressed}) {
     return SizedBox(
-      width: 250,
+      width: MediaQuery.of(context).size.width * 0.6,
       child: ElevatedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon),
@@ -141,5 +148,12 @@ class TttHomeScreenState extends State<TttHomeScreen> {
         ),
       ),
     );
+  }
+}
+
+class MyCustomScrollBehavior extends ScrollBehavior {
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }

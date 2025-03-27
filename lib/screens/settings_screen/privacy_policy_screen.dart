@@ -8,35 +8,38 @@ class PrivacyPolicyScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Privacy Policy')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            _buildSection(context, '✅ Data Collection', [
-              'No personal data is collected or shared online.',
-              'Your data is stored locally using SQLite and Shared Preferences.',
-              'All saved data is deleted upon uninstallation.',
-            ]),
-            _buildSection(context, '🛠 How We Use Your Data', [
-              'Your username, email, and game history are saved only on your device.',
-              'No data is sent to external servers or shared with others.',
-            ]),
-            _buildSection(context, '📢 Advertisements', [
-              'The App displays banner and full-screen ads.',
-              'Ads require an internet connection.',
-              'If offline, the App will ask you to connect to the internet to show ads.',
-            ]),
-            _buildSection(context, '🎮 Game Modes', [
-              'Single Player: Play against a bot (offline).',
-              'Two Player: Play with a friend on the same device.',
-            ]),
-            _buildSection(context, '🗑 Data Deletion', [
-              'If you uninstall the App, all saved data, including game stats and user details, will be deleted permanently.',
-            ]),
-            _buildContactSection(context),
-          ],
+      body: ScrollConfiguration(
+        behavior: MyCustomScrollBehavior(),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              _buildSection(context, '✅ Data Collection', [
+                'No personal data is collected or shared online.',
+                'Your data is stored locally using SQLite and Shared Preferences.',
+                'All saved data is deleted upon uninstallation.',
+              ]),
+              _buildSection(context, '🛠 How We Use Your Data', [
+                'Your username, email, and game history are saved only on your device.',
+                'No data is sent to external servers or shared with others.',
+              ]),
+              _buildSection(context, '📢 Advertisements', [
+                'The App displays banner and full-screen ads.',
+                'Ads require an internet connection.',
+                'If offline, the App will ask you to connect to the internet to show ads.',
+              ]),
+              _buildSection(context, '🎮 Game Modes', [
+                'Single Player: Play against a bot (offline).',
+                'Two Player: Play with a friend on the same device.',
+              ]),
+              _buildSection(context, '🗑 Data Deletion', [
+                'If you uninstall the App, all saved data, including game stats and user details, will be deleted permanently.',
+              ]),
+              _buildContactSection(context),
+            ],
+          ),
         ),
       ),
     );
@@ -159,5 +162,12 @@ class PrivacyPolicyScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class MyCustomScrollBehavior extends ScrollBehavior {
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }

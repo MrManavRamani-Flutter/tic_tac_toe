@@ -113,6 +113,9 @@ class TicTacToeTwoPlayerGameScreenState
   @override
   Widget build(BuildContext context) {
     final connectivityProvider = Provider.of<ConnectivityProvider>(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isSplitScreen = screenSize.height < 600; // Detect split-screen
+
     return !connectivityProvider.isConnected
         ? const NoInternetScreen()
         : Scaffold(
@@ -120,22 +123,46 @@ class TicTacToeTwoPlayerGameScreenState
               title: const Text("Tic Tac Toe",
                   style: TextStyle(fontWeight: FontWeight.bold)),
               leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => Navigator.pop(context)),
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.pop(context),
+              ),
+              toolbarHeight:
+                  screenSize.height * 0.1, // Responsive AppBar height
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  HeadingSection(
-                    player1Name: widget.player1Name,
-                    player2Name: widget.player2Name,
-                    isPlayerOneTurn: isPlayerOneTurn,
-                  ),
-                  const SizedBox(height: 20),
-                  GameBoard(
-                      board: board, gridSize: gridSize, onCellTap: _onCellTap),
-                ],
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                  ],
+                ),
+              ),
+              child: Padding(
+                padding: EdgeInsets.all(isSplitScreen ? 8.0 : 16.0),
+                // Responsive padding
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    HeadingSection(
+                      player1Name: widget.player1Name,
+                      player2Name: widget.player2Name,
+                      isPlayerOneTurn: isPlayerOneTurn,
+                      screenHeight: screenSize.height,
+                    ),
+                    SizedBox(
+                        height: isSplitScreen ? 10 : 20), // Responsive spacing
+                    GameBoard(
+                      board: board,
+                      gridSize: gridSize,
+                      onCellTap: _onCellTap,
+                      screenSize: screenSize,
+                      isSplitScreen: isSplitScreen,
+                    ),
+                  ],
+                ),
               ),
             ),
           );
@@ -145,21 +172,41 @@ class TicTacToeTwoPlayerGameScreenState
 class HeadingSection extends StatelessWidget {
   final String player1Name, player2Name;
   final bool isPlayerOneTurn;
+  final double screenHeight;
 
   const HeadingSection({
     super.key,
     required this.player1Name,
     required this.player2Name,
     required this.isPlayerOneTurn,
+    required this.screenHeight,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isSplitScreen = screenHeight < 600;
+    final textScale =
+        isSplitScreen ? 0.8 : 1.0; // Scale down text in split-screen
+    final avatarRadius =
+        isSplitScreen ? 20.0 : 30.0; // Smaller avatar in split-screen
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        PlayerInfo(label: player1Name, icon: "X", isActive: isPlayerOneTurn),
-        PlayerInfo(label: player2Name, icon: "O", isActive: !isPlayerOneTurn),
+        PlayerInfo(
+          label: player1Name,
+          icon: "X",
+          isActive: isPlayerOneTurn,
+          textScale: textScale,
+          avatarRadius: avatarRadius,
+        ),
+        PlayerInfo(
+          label: player2Name,
+          icon: "O",
+          isActive: !isPlayerOneTurn,
+          textScale: textScale,
+          avatarRadius: avatarRadius,
+        ),
       ],
     );
   }
@@ -168,30 +215,41 @@ class HeadingSection extends StatelessWidget {
 class PlayerInfo extends StatelessWidget {
   final String label, icon;
   final bool isActive;
+  final double textScale;
+  final double avatarRadius;
 
   const PlayerInfo({
     super.key,
     required this.label,
     required this.icon,
     required this.isActive,
+    required this.textScale,
+    required this.avatarRadius,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label,
-            style: Theme.of(context)
-                .textTheme
-                .bodyLarge
-                ?.copyWith(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 10),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 16 * textScale, // Responsive text size
+              ),
+        ),
+        SizedBox(height: 10 * textScale), // Responsive spacing
         CircleAvatar(
-          radius: 30,
+          radius: avatarRadius,
           backgroundColor:
               isActive ? Theme.of(context).colorScheme.secondary : Colors.grey,
-          child: Text(icon,
-              style: const TextStyle(fontSize: 32, color: Colors.white)),
+          child: Text(
+            icon,
+            style: TextStyle(
+              fontSize: 32 * textScale, // Scale font size
+              color: Colors.white,
+            ),
+          ),
         ),
       ],
     );
@@ -202,17 +260,30 @@ class GameBoard extends StatelessWidget {
   final List<String> board;
   final int gridSize;
   final Function(int) onCellTap;
+  final Size screenSize;
+  final bool isSplitScreen;
 
   const GameBoard({
     super.key,
     required this.board,
     required this.gridSize,
     required this.onCellTap,
+    required this.screenSize,
+    required this.isSplitScreen,
   });
 
   @override
   Widget build(BuildContext context) {
-    double boardSize = MediaQuery.of(context).size.width * 0.85;
+    // Calculate board size based on screen dimensions
+    final maxBoardWidth = screenSize.width * 0.85;
+    final maxBoardHeight =
+        screenSize.height * 0.6; // Limit height to 60% of screen
+    final boardSize = isSplitScreen
+        ? maxBoardWidth < maxBoardHeight
+            ? maxBoardWidth
+            : maxBoardHeight
+        : maxBoardWidth; // Use smaller dimension in split-screen
+
     return Container(
       width: boardSize,
       height: boardSize,
@@ -221,33 +292,39 @@ class GameBoard extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-              color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
-              blurRadius: 10)
+            color: Theme.of(context).colorScheme.secondary.withOpacity(0.5),
+            blurRadius: 10,
+          ),
         ],
       ),
       child: GridView.builder(
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate:
-            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: gridSize),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: gridSize,
+          childAspectRatio: 1,
+        ),
         itemCount: gridSize * gridSize,
         itemBuilder: (_, index) => GestureDetector(
           onTap: () => onCellTap(index),
           child: Container(
-            margin: const EdgeInsets.all(4),
+            margin: EdgeInsets.all(isSplitScreen ? 2 : 4),
+            // Responsive margin
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
               borderRadius: BorderRadius.circular(8),
               boxShadow: [
                 BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.3),
-                    blurRadius: 4)
+                  color: Theme.of(context).primaryColor.withOpacity(0.3),
+                  blurRadius: 4,
+                ),
               ],
             ),
             child: Center(
               child: Text(
                 board[index],
                 style: TextStyle(
-                  fontSize: 32,
+                  fontSize: isSplitScreen ? 24 : 32,
+                  // Smaller font in split-screen
                   fontWeight: FontWeight.bold,
                   color: board[index] == "X"
                       ? Theme.of(context).primaryColor
