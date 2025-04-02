@@ -34,9 +34,13 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Add this line inside the <application> tag -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713" /> <!-- Test ID -->
+            android:value="ca-app-pub-6919467491710773~1348474752"/>
+<!--        <meta-data-->
+<!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
+<!--            android:value="ca-app-pub-3940256099942544~3347511713" /> &lt;!&ndash; Test ID &ndash;&gt;-->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

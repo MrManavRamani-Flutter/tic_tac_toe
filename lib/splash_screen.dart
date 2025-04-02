@@ -42,8 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
-    )
-      ..repeat(reverse: true);
+    )..repeat(reverse: true);
 
     _countdownAnimation = IntTween(begin: 3, end: 1).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeIn),
@@ -80,8 +79,7 @@ class _SplashScreenState extends State<SplashScreen>
         context,
         PageRouteBuilder(
           transitionDuration: const Duration(milliseconds: 800),
-          pageBuilder: (_, __, ___) =>
-          connectivity.isConnected
+          pageBuilder: (_, __, ___) => connectivity.isConnected
               ? const TttHomeScreen()
               : const NoInternetScreen(),
           transitionsBuilder: (_, animation, __, child) {
