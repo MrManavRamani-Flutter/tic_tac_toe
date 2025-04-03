@@ -18,34 +18,47 @@ class NoInternetScreen extends StatelessWidget {
           ),
         ),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.wifi_off,
-                size: 80,
-                color: Colors.grey,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'No Internet Connection',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                  color: Colors.grey,
-                  shadows: [],
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Please turn on your internet to continue.',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+          child: ScrollConfiguration(
+            behavior: MyCustomScrollBehavior(),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.wifi_off,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'No Internet Connection',
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
                       color: Colors.grey,
+                      shadows: [],
                     ),
-                textAlign: TextAlign.center,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Please turn on your internet to continue.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey,
+                        ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
+  }
+}
+
+class MyCustomScrollBehavior extends ScrollBehavior {
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }

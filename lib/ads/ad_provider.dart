@@ -1,16 +1,21 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'app_open_ad_manager.dart';
+
+// import 'app_open_ad_manager.dart';
 import 'interstitial_ad_manager.dart';
 
 class AdProvider with ChangeNotifier {
-  // Global Ad Unit IDs using test IDs
-  static const String bannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
+  // Global Ad Unit IDs using Live IDs
+  static const String bannerAdUnitId = 'ca-app-pub-6919467491710773/7966688145';
+
   static const String interstitialAdUnitId =
-      'ca-app-pub-3940256099942544/1033173712';
-  static const String appOpenAdUnitId =
-      'ca-app-pub-3940256099942544/9257395921';
+      'ca-app-pub-6919467491710773/8641475566';
+
+  // Global Ad Unit IDs using Test IDs
+
+  // static const String appOpenAdUnitId =
+  //     'ca-app-pub-3940256099942544/9257395921';
 
   // Banner Ad instances
   BannerAd? _homeBottomBannerAd;
@@ -45,7 +50,7 @@ class AdProvider with ChangeNotifier {
 
   // Initialize ads when the provider is created
   Future<void> initializeAds() async {
-    await AppOpenAdManager.loadAdWithAwait(); // New method to await ad loading
+    // await AppOpenAdManager.loadAdWithAwait(); // New method to await ad loading
     InterstitialAdManager.loadInterstitialAd();
     _loadHomeBottomBannerAd(); // Load initial ads
     notifyListeners();
@@ -218,16 +223,16 @@ class AdProvider with ChangeNotifier {
   }
 
   // Show App Open Ad
-  void showAppOpenAd(VoidCallback onAdDismissed) {
-    if (AppOpenAdManager.isAdLoaded) {
-      log('Showing app open ad...');
-      AppOpenAdManager.showAd(onAdDismissed);
-    } else {
-      log('No App Open Ad available to show, preloading for next time.');
-      AppOpenAdManager.loadAd();
-      onAdDismissed();
-    }
-  }
+  // void showAppOpenAd(VoidCallback onAdDismissed) {
+  //   if (AppOpenAdManager.isAdLoaded) {
+  //     log('Showing app open ad...');
+  //     AppOpenAdManager.showAd(onAdDismissed);
+  //   } else {
+  //     log('No App Open Ad available to show, preloading for next time.');
+  //     AppOpenAdManager.loadAd();
+  //     onAdDismissed();
+  //   }
+  // }
 
   // Show Interstitial Ad
   void showInterstitialAd(VoidCallback onAdDismissed) {
@@ -245,7 +250,7 @@ class AdProvider with ChangeNotifier {
     _twoPlayerResultsBottomBannerAd?.dispose();
     _twoPlayerScoreBottomBannerAd?.dispose();
     InterstitialAdManager.disposeInterstitialAd();
-    AppOpenAdManager.dispose();
+    // AppOpenAdManager.dispose();
     super.dispose();
     log('AdProvider disposed.');
   }

@@ -29,6 +29,8 @@ class ScoreScreenState extends State<ScoreScreen> {
     final scoreProvider = context.watch<ScoreProvider>();
     final connectivityProvider = Provider.of<ConnectivityProvider>(context);
     final adProvider = Provider.of<AdProvider>(context); // Access AdProvider
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
 
     int wins = 0;
     int losses = 0;
@@ -40,8 +42,7 @@ class ScoreScreenState extends State<ScoreScreen> {
       wins = score.win;
       losses = score.loss;
       draws = score.draw;
-      log(
-          '[log] ScoreScreen: Displaying scores - Wins: $wins, Losses: $losses, Draws: $draws');
+      log('[log] ScoreScreen: Displaying scores - Wins: $wins, Losses: $losses, Draws: $draws');
     } else {
       log('[log] ScoreScreen: No scores available.');
     }
@@ -49,72 +50,79 @@ class ScoreScreenState extends State<ScoreScreen> {
     return !connectivityProvider.isConnected
         ? const NoInternetScreen()
         : Scaffold(
-            appBar: AppBar(
-              title: const Text('Single Player Scores'),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.pop(context),
-              ),
+      appBar: AppBar(
+        title: const Text('Single Player Scores'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Container(
+          height: screenHeight,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+              ],
             ),
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                  ],
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Centered Content
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Your Scoreboard',
-                              style: Theme.of(context).textTheme.displayLarge),
-                          const SizedBox(height: 30),
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.5),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                _buildScoreTile("Wins", wins, Colors.green),
-                                const SizedBox(height: 20),
-                                _buildScoreTile("Losses", losses, Colors.red),
-                                const SizedBox(height: 20),
-                                _buildScoreTile("Draws", draws, Colors.orange),
-                              ],
-                            ),
+          ),
+          child: Column(
+            children: [
+              // Centered Content
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Your Scoreboard',
+                        style: Theme.of(context).textTheme.displayLarge),
+                    const SizedBox(height: 30),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Theme.of(context)
+                                .primaryColor
+                                .withOpacity(0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
+                      child: Column(
+                        children: [
+                          _buildScoreTile("Wins", wins, Colors.green),
+                          const SizedBox(height: 20),
+                          _buildScoreTile("Losses", losses, Colors.red),
+                          const SizedBox(height: 20),
+                          _buildScoreTile("Draws", draws, Colors.orange),
+                        ],
+                      ),
                     ),
-                  ),
-
-                  // Bottom Banner Ad
-                  adProvider.getScoreBottomBannerAdWidget(),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
+              const SizedBox(height: 10),
+              // Bottom Banner Ad
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  height: 50, // Adjust height as needed
+                  child: adProvider.getScoreBottomBannerAdWidget(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildScoreTile(String label, int score, Color color) {

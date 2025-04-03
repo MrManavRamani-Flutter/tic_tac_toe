@@ -9,23 +9,19 @@ import 'providers/two_player_game_provider.dart';
 import 'providers/score_provider.dart';
 import 'database/database_helper.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize Mobile Ads SDK
   await MobileAds.instance.initialize();
-  MobileAds.instance.updateRequestConfiguration(
-    RequestConfiguration(testDeviceIds: ["27F289DA0EED2C3628B923F9D0A2DA6C"]),
-  );
 
   // Initialize the database
   await DatabaseHelper().database;
 
   // Initialize Providers
   final adProvider = AdProvider();
-  await adProvider
-      .initializeAds(); // This is already async, but ensure ad is loaded
-  await Future.delayed(Duration.zero); // Allow ad loading to start
+  await adProvider.initializeAds(); // Ensure ads load properly
+
   final themeProvider = await ThemeProvider.init();
 
   runApp(

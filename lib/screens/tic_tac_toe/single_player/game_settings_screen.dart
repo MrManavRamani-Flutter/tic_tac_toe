@@ -66,7 +66,11 @@ class GameSettingsScreenState extends State<GameSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final connectivityProvider = Provider.of<ConnectivityProvider>(context);
-    final adProvider = Provider.of<AdProvider>(context); // Access AdProvider
+    final adProvider = Provider.of<AdProvider>(context);
+    final mediaQuery = MediaQuery.of(context);
+    final screenHeight = mediaQuery.size.height;
+    final screenWidth = mediaQuery.size.width;
+    final isPortrait = mediaQuery.orientation == Orientation.portrait;
 
     return !connectivityProvider.isConnected
         ? const NoInternetScreen()
@@ -78,94 +82,119 @@ class GameSettingsScreenState extends State<GameSettingsScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
             ),
-            body: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-                  ],
+            body: Stack(
+              children: [
+                // Background Gradient
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                        Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(0.2),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              child: Column(
-                children: [
-                  // Centered Content
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
+                // Scrollable Content with ListView
+                ListView(
+                  padding: EdgeInsets.all(screenWidth * 0.06),
+                  children: [
+                    // Title
+                    Center(
+                      child: Text(
+                        'Tic Tac Toe',
+                        style:
+                            Theme.of(context).textTheme.displayLarge?.copyWith(
+                                  fontSize: isPortrait
+                                      ? screenWidth * 0.1
+                                      : screenWidth * 0.06,
+                                ),
+                      ),
+                    ),
+                    SizedBox(height: screenHeight * 0.04),
+
+                    // Game Settings Box
+                    Container(
+                      padding: EdgeInsets.all(screenWidth * 0.05),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color:
+                                Theme.of(context).primaryColor.withOpacity(0.5),
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('Tic Tac Toe',
-                              style: Theme.of(context).textTheme.displayLarge),
-                          const SizedBox(height: 30),
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).cardColor,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Theme.of(context)
-                                      .primaryColor
-                                      .withOpacity(0.5),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 5),
-                                ),
-                              ],
+                          _buildDropdown(
+                            "Board Size",
+                            _selectedBoardSize,
+                            ['3x3', '4x4', '5x5'],
+                            (value) =>
+                                setState(() => _selectedBoardSize = value!),
+                            Icons.grid_view,
+                          ),
+                          SizedBox(height: screenHeight * 0.025),
+                          _buildDropdown(
+                            "Difficulty",
+                            _selectedDifficulty,
+                            ['Easy', 'Medium', 'Hard'],
+                            (value) =>
+                                setState(() => _selectedDifficulty = value!),
+                            Icons.speed,
+                          ),
+                          SizedBox(height: screenHeight * 0.0375),
+                          ElevatedButton(
+                            onPressed: _startGame,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.1,
+                                vertical: screenHeight * 0.015,
+                              ),
                             ),
-                            child: Column(
-                              children: [
-                                _buildDropdown(
-                                  "Board Size",
-                                  _selectedBoardSize,
-                                  ['3x3', '4x4', '5x5'],
-                                  (value) => setState(
-                                      () => _selectedBoardSize = value!),
-                                  Icons.grid_view,
-                                ),
-                                const SizedBox(height: 20),
-                                _buildDropdown(
-                                  "Difficulty",
-                                  _selectedDifficulty,
-                                  ['Easy', 'Medium', 'Hard'],
-                                  (value) => setState(
-                                      () => _selectedDifficulty = value!),
-                                  Icons.speed,
-                                ),
-                                const SizedBox(height: 30),
-                                ElevatedButton(
-                                  onPressed: _startGame,
-                                  child: const Text('Play Now'),
-                                ),
-                                const SizedBox(height: 20),
-                                ElevatedButton(
-                                  onPressed: () => Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ScoreScreen()),
-                                  ),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.secondary,
-                                  ),
-                                  child: const Text('View Scores'),
-                                ),
-                              ],
+                            child: const Text('Play Now'),
+                          ),
+                          SizedBox(height: screenHeight * 0.025),
+                          ElevatedButton(
+                            onPressed: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => const ScoreScreen()),
                             ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.secondary,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.1,
+                                vertical: screenHeight * 0.015,
+                              ),
+                            ),
+                            child: const Text('View Scores'),
                           ),
                         ],
                       ),
                     ),
-                  ),
 
-                  // Bottom Banner Ad
-                  adProvider.getGameSettingsBottomBannerAdWidget(),
-                ],
-              ),
+                    // Ad Banner
+                    SizedBox(height: screenHeight * 0.02),
+                    SizedBox(
+                      height: screenHeight * 0.07,
+                      width: double.infinity,
+                      child: adProvider.getGameSettingsBottomBannerAdWidget(),
+                    ),
+                  ],
+                ),
+              ],
             ),
           );
   }

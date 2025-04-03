@@ -20,49 +20,56 @@ class SettingsScreen extends StatelessWidget {
           }, // Back to Home Screen
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Theme.of(context).colorScheme.primary.withOpacity(0.2),
-              Theme.of(context).colorScheme.secondary.withOpacity(0.2),
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Theme Switch
-              _buildSettingsTile(
-                context,
-                icon: themeProvider.isDarkMode
-                    ? Icons.wb_sunny
-                    : Icons.nightlight,
-                title: 'Theme',
-                trailing: Switch(
-                  value: themeProvider.isDarkMode,
-                  onChanged: (value) => themeProvider.toggleTheme(),
-                  activeColor: Theme.of(context).colorScheme.secondary,
-                ),
+      body: ScrollConfiguration(
+        behavior: MyCustomScrollBehavior(),
+        child: SingleChildScrollView(
+          child: Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                  Theme.of(context).colorScheme.secondary.withOpacity(0.2),
+                ],
               ),
-              const SizedBox(height: 16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Theme Switch
+                  _buildSettingsTile(
+                    context,
+                    icon: themeProvider.isDarkMode
+                        ? Icons.wb_sunny
+                        : Icons.nightlight,
+                    title: 'Theme',
+                    trailing: Switch(
+                      value: themeProvider.isDarkMode,
+                      onChanged: (value) => themeProvider.toggleTheme(),
+                      activeColor: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
 
-              // Privacy Policy Option
-              _buildSettingsTile(
-                context,
-                icon: Icons.privacy_tip,
-                title: 'Privacy Policy',
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const PrivacyPolicyScreen()),
-                ),
+                  // Privacy Policy Option
+                  _buildSettingsTile(
+                    context,
+                    icon: Icons.privacy_tip,
+                    title: 'Privacy Policy',
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const PrivacyPolicyScreen()),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -87,5 +94,12 @@ class SettingsScreen extends StatelessWidget {
         onTap: onTap,
       ),
     );
+  }
+}
+
+class MyCustomScrollBehavior extends ScrollBehavior {
+  Widget buildViewportChrome(
+      BuildContext context, Widget child, AxisDirection axisDirection) {
+    return child;
   }
 }

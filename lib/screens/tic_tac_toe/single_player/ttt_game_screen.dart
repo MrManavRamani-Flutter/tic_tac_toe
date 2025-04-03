@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../ads/ad_provider.dart'; // Import AdProvider for interstitial ad
+import '../../../ads/ad_provider.dart';
 import '../../../providers/connectivity_provider.dart';
-import '../../../providers/score_provider.dart'; // Import ScoreProvider to manage scores
+import '../../../providers/score_provider.dart';
 import '../../auth_screens/no_internet_screen.dart';
 import 'results_screen.dart';
 
@@ -27,12 +27,14 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
   bool gameOver = false;
   String winner = "";
   bool _hasShownResults = false;
+  bool isPlayerTurn = true; // New flag to track whose turn it is
+  bool isProcessing = false; // New flag to prevent multiple clicks
 
   @override
   void initState() {
     super.initState();
     gridSize = _getGridSize();
-    board = List.filled(gridSize * gridSize, ""); // Initialize the board
+    board = List.filled(gridSize * gridSize, "");
   }
 
   int _getGridSize() {
@@ -44,28 +46,37 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
       case '5x5':
         return 5;
       default:
-        return 3; // Default to 3x3 if no valid size is provided
+        return 3;
     }
   }
 
   void _onCellTap(int index) {
-    if (board[index].isNotEmpty || gameOver) return;
+    if (!isPlayerTurn || isProcessing || board[index].isNotEmpty || gameOver) {
+      return;
+    }
 
     setState(() {
-      board[index] = "X"; // Player's move
+      isProcessing = true; // Lock input
+      board[index] = "X";
       if (_checkWinner("X")) {
         winner = "You Win!";
         gameOver = true;
       } else if (_isBoardFull()) {
         winner = "It's a Draw!";
         gameOver = true;
-      } else {
-        Future.delayed(const Duration(milliseconds: 500), _computerMove);
       }
     });
 
     if (gameOver) {
       _handleGameOver();
+    } else {
+      Future.delayed(const Duration(milliseconds: 500), () {
+        setState(() {
+          isPlayerTurn = false; // Switch to AI's turn
+          isProcessing = false; // Unlock after player's move is processed
+        });
+        _computerMove();
+      });
     }
   }
 
@@ -75,16 +86,22 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
     int aiMove = _getAIMove();
 
     if (aiMove != -1) {
+      setState(() {
+        isProcessing = true; // Lock input during AI move
+        board[aiMove] = "O";
+        if (_checkWinner("O")) {
+          winner = "Computer Wins!";
+          gameOver = true;
+        } else if (_isBoardFull()) {
+          winner = "It's a Draw!";
+          gameOver = true;
+        }
+      });
+
       Future.delayed(const Duration(milliseconds: 500), () {
         setState(() {
-          board[aiMove] = "O"; // AI's move
-          if (_checkWinner("O")) {
-            winner = "Computer Wins!";
-            gameOver = true;
-          } else if (_isBoardFull()) {
-            winner = "It's a Draw!";
-            gameOver = true;
-          }
+          isPlayerTurn = true; // Switch back to player's turn
+          isProcessing = false; // Unlock for next player move
         });
 
         if (gameOver) {
@@ -133,41 +150,36 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
 
   int _hardAIMove(List<int> emptyCells) {
     int? winningMove = _tryWinningMove("O", emptyCells);
-    if (winningMove != null) {
-      return winningMove; // Return if we found a winning move
-    }
+    if (winningMove != null) return winningMove;
 
     int? blockingMove = _tryBlockingMove("X", emptyCells);
-    if (blockingMove != null) {
-      return blockingMove; // Return if we found a blocking move
-    }
+    if (blockingMove != null) return blockingMove;
 
-    return _selectRandomMove(
-        emptyCells); // Play a random move if no high-priority moves available
+    return _selectRandomMove(emptyCells);
   }
 
   int? _tryWinningMove(String player, List<int> emptyCells) {
     for (int cell in emptyCells) {
       board[cell] = player;
       if (_checkWinner(player)) {
-        board[cell] = ""; // Undo move
-        return cell; // Winning move found
+        board[cell] = "";
+        return cell;
       }
-      board[cell] = ""; // Undo move
+      board[cell] = "";
     }
-    return null; // No winning move found
+    return null;
   }
 
   int? _tryBlockingMove(String player, List<int> emptyCells) {
     for (int cell in emptyCells) {
-      board[cell] = player; // Try the move
+      board[cell] = player;
       if (_checkWinner(player)) {
-        board[cell] = ""; // Undo move
-        return cell; // Blocking move found
+        board[cell] = "";
+        return cell;
       }
-      board[cell] = ""; // Undo move
+      board[cell] = "";
     }
-    return null; // No blocking move found
+    return null;
   }
 
   int _selectRandomMove(List<int> emptyCells) {
@@ -208,7 +220,6 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
   void _showInterstitialAdAndProceed() {
     final adProvider = Provider.of<AdProvider>(context, listen: false);
     adProvider.showInterstitialAd(() async {
-      // Callback after ad is dismissed or fails
       await _updateScoreAfterGame();
       if (mounted) {
         Navigator.pushReplacement(
@@ -227,8 +238,6 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
 
   Future<void> _updateScoreAfterGame() async {
     final scoreProvider = context.read<ScoreProvider>();
-
-    // Always update the existing score record
     if (winner == "You Win!") {
       await scoreProvider.updateScore(win: true, loss: false, draw: false);
     } else if (winner == "Computer Wins!") {
@@ -241,6 +250,10 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
   @override
   Widget build(BuildContext context) {
     final connectivityProvider = Provider.of<ConnectivityProvider>(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isSplitScreen =
+        screenSize.height < 600; // Threshold for split-screen detection
+
     return !connectivityProvider.isConnected
         ? const NoInternetScreen()
         : Scaffold(
@@ -250,6 +263,8 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
                 icon: const Icon(Icons.arrow_back),
                 onPressed: () => Navigator.pop(context),
               ),
+              toolbarHeight:
+                  screenSize.height * 0.1, // Responsive AppBar height
             ),
             body: Container(
               decoration: BoxDecoration(
@@ -263,15 +278,24 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
                 ),
               ),
               child: Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: EdgeInsets.all(
+                  isSplitScreen ? 8.0 : 16.0, // Reduced padding in split-screen
+                ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const HeadingSection(),
-                    const SizedBox(height: 20),
+                    HeadingSection(
+                      isPlayerTurn: isPlayerTurn,
+                      screenHeight: screenSize.height,
+                    ),
+                    SizedBox(
+                        height: isSplitScreen ? 10 : 20), // Responsive spacing
                     GameBoard(
                       board: board,
                       gridSize: gridSize,
                       onCellTap: _onCellTap,
+                      screenSize: screenSize,
+                      isSplitScreen: isSplitScreen,
                     ),
                   ],
                 ),
@@ -282,15 +306,40 @@ class TicTacToeGameScreenState extends State<TicTacToeGameScreen> {
 }
 
 class HeadingSection extends StatelessWidget {
-  const HeadingSection({super.key});
+  final bool isPlayerTurn;
+  final double screenHeight;
+
+  const HeadingSection({
+    super.key,
+    required this.isPlayerTurn,
+    required this.screenHeight,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    final isSplitScreen = screenHeight < 600;
+    final textScale =
+        isSplitScreen ? 0.8 : 1.0; // Scale down text in split-screen
+    final avatarRadius =
+        isSplitScreen ? 20.0 : 30.0; // Smaller avatar in split-screen
+
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        PlayerInfo(label: "You (X)", icon: "X", isActive: true),
-        PlayerInfo(label: "Bot (O)", icon: "O", isActive: false),
+        PlayerInfo(
+          label: "You (X)",
+          icon: "X",
+          isActive: isPlayerTurn,
+          textScale: textScale,
+          avatarRadius: avatarRadius,
+        ),
+        PlayerInfo(
+          label: "Bot (O)",
+          icon: "O",
+          isActive: !isPlayerTurn,
+          textScale: textScale,
+          avatarRadius: avatarRadius,
+        ),
       ],
     );
   }
@@ -300,29 +349,39 @@ class PlayerInfo extends StatelessWidget {
   final String label;
   final String icon;
   final bool isActive;
+  final double textScale;
+  final double avatarRadius;
 
   const PlayerInfo({
     super.key,
     required this.label,
     required this.icon,
     required this.isActive,
+    required this.textScale,
+    required this.avatarRadius,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyLarge),
-        const SizedBox(height: 10),
+        Text(
+          label,
+          style: Theme.of(context)
+              .textTheme
+              .bodyLarge!
+              .copyWith(fontSize: 16 * textScale), // Responsive text size
+        ),
+        SizedBox(height: 10 * textScale), // Responsive spacing
         CircleAvatar(
-          radius: 30,
+          radius: avatarRadius,
           backgroundColor:
               isActive ? Theme.of(context).primaryColor : Colors.grey,
           child: Text(
             icon,
             style: TextStyle(
               fontFamily: 'ComicSansMS',
-              fontSize: 32,
+              fontSize: 32 * textScale, // Scale font size
               color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
@@ -336,17 +395,29 @@ class GameBoard extends StatelessWidget {
   final List<String> board;
   final int gridSize;
   final Function(int) onCellTap;
+  final Size screenSize;
+  final bool isSplitScreen;
 
   const GameBoard({
     super.key,
     required this.board,
     required this.gridSize,
     required this.onCellTap,
+    required this.screenSize,
+    required this.isSplitScreen,
   });
 
   @override
   Widget build(BuildContext context) {
-    double boardSize = MediaQuery.of(context).size.width * 0.85;
+    // Calculate board size based on screen dimensions
+    final maxBoardWidth = screenSize.width * 0.85;
+    final maxBoardHeight =
+        screenSize.height * 0.6; // Limit height to 60% of screen
+    final boardSize = isSplitScreen
+        ? maxBoardWidth < maxBoardHeight
+            ? maxBoardWidth
+            : maxBoardHeight
+        : maxBoardWidth; // Use smaller dimension in split-screen
 
     return Container(
       width: boardSize,
@@ -373,7 +444,8 @@ class GameBoard extends StatelessWidget {
           return GestureDetector(
             onTap: () => onCellTap(index),
             child: Container(
-              margin: const EdgeInsets.all(4),
+              margin: EdgeInsets.all(isSplitScreen ? 2 : 4),
+              // Responsive margin
               decoration: BoxDecoration(
                 color: Theme.of(context).cardColor,
                 borderRadius: BorderRadius.circular(12),
@@ -390,7 +462,8 @@ class GameBoard extends StatelessWidget {
                   board[index],
                   style: TextStyle(
                     fontFamily: 'ComicSansMS',
-                    fontSize: 40,
+                    fontSize: isSplitScreen ? 32 : 40,
+                    // Smaller font in split-screen
                     fontWeight: FontWeight.bold,
                     color: board[index] == "X"
                         ? Theme.of(context).primaryColor
