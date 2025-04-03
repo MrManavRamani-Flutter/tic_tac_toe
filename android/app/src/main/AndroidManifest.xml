@@ -1,11 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <!--    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />-->
     <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher_001"
         android:enableOnBackInvokedCallback="true"
+        android:icon="@mipmap/ic_launcher_001"
         android:label="Tic Tac Toe">
         <activity
             android:name=".MainActivity"
@@ -37,10 +37,10 @@
         <!-- Add this line inside the <application> tag -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-6919467491710773~1348474752"/>
-<!--        <meta-data-->
-<!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
-<!--            android:value="ca-app-pub-3940256099942544~3347511713" /> &lt;!&ndash; Test ID &ndash;&gt;-->
+            android:value="ca-app-pub-6919467491710773~1348474752" />
+        <!--        <meta-data-->
+        <!--            android:name="com.google.android.gms.ads.APPLICATION_ID"-->
+        <!--            android:value="ca-app-pub-3940256099942544~3347511713" /> &lt;!&ndash; Test ID &ndash;&gt;-->
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
@@ -48,10 +48,10 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT" />
-            <data android:mimeType="text/plain" />
-        </intent>
+        <!--        <intent>-->
+        <!--            <action android:name="android.intent.action.PROCESS_TEXT" />-->
+        <!--            <data android:mimeType="text/plain" />-->
+        <!--        </intent>-->
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="mailto" />

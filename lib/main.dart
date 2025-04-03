@@ -8,7 +8,6 @@ import 'providers/connectivity_provider.dart';
 import 'providers/two_player_game_provider.dart';
 import 'providers/score_provider.dart';
 import 'database/database_helper.dart';
-import 'dart:io';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
